@@ -7,11 +7,13 @@ public class App {
     public static void main(String[] args) throws Exception {
         String[] keywords = {"Else", "ElseIf", "EndFor", "EndIf", "EndSub", "EndWhile", "For", "Goto", "If", "Step", "Sub", "Then", "To", "While"};
         String[] objects ={"Array", "Clock", "Controls", "Desktop", "Dictionary", "File", "Flickr", "GraphicsWindow", "ImageList", "Math", "Mouse", "Network", "Program", "Shapes", "Sound", "Stack", "Text", "TextWindow", "Timer", "Turtle"};
+        String[] operators ={"=", "+", "-", "*", "/", ">", "<", ">=", "<=", "<>", "And", "Or"};
         ArrayList<Token> AllTokens = new ArrayList<Token>();
         AllTokens = getKeywords(keywords);
         AllTokens = getObjects(AllTokens, objects);
         AllTokens = getVariables(AllTokens, objects);
-        AllTokens = getMethods(AllTokens);
+        AllTokens = getMethods(AllTokens);        
+        AllTokens = getOperators(AllTokens, operators);
         //getLiterals(AllTokens);
         for (int i = 0; i < AllTokens.size();i++){
             System.out.println(AllTokens.get(i).toString());
@@ -151,14 +153,14 @@ public class App {
         return tokens;
     }
 
-    /*static ArrayList<Token> getLiterals(ArrayList<Token> t){
+    static void /*ArrayList<Token>*/ getLiterals(ArrayList<Token> t){
         ArrayList<Token> tokens = new ArrayList<Token>();
         tokens = t;
         try {
             File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
             Scanner reader = new Scanner(subset); 
-            while (reader.hasNext()) {
-                String data = reader.next();
+            while (reader.hasNextLine()) {
+                String data = reader.nextLine();
                 boolean isPresent = false;
                 for (int i = 0;i < tokens.size();i++){
                     if (data.contains(tokens.get(i).getValue())){
@@ -176,5 +178,29 @@ public class App {
         }
 
         //return tokens;
-    }*/
+    }
+
+    static ArrayList<Token> getOperators(ArrayList<Token> t, String[] operators){
+        ArrayList<Token> tokens = new ArrayList<Token>();
+        tokens = t;
+        try {
+            File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
+            Scanner reader = new Scanner(subset); 
+            while (reader.hasNext()) {
+                String data = reader.next();
+                for (int i = 0;i < operators.length;i++){
+                    if (data.contains(operators[i])){
+                        Token newOperator = new Token("Operator", operators[i]);
+                        tokens.add(newOperator);
+                    }
+                }
+            }
+            reader.close();
+        } catch (FileNotFoundException e){
+            System.out.println("File not found!");
+            e.printStackTrace();
+        }
+
+        return tokens;
+    }
 }
