@@ -1,137 +1,237 @@
+/* * Class:       CS 4308 Section 01 
+* Term:        Summer 2021 
+* Name:        Erik Delgadillo, Ahsan Jamal, Momodou Mbye
+* Instructor:   Deepa Muralidhar 
+* Project:  Deliverable 1 Scanner - Java */
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
 
 public class App {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {        
+        ArrayList<Token> AllTokens = new ArrayList<Token>();
+        /*AllTokens =*/ lex();
+        /*for (int i = 0; i < AllTokens.size();i++){
+            System.out.println(AllTokens.get(i).toString());
+        }*/
+    }
+
+    static void /*ArrayList<Token>*/ lex() {
         String[] keywords = {"Else", "ElseIf", "EndFor", "EndIf", "EndSub", "EndWhile", "For", "Goto", "If", "Step", "Sub", "Then", "To", "While"};
         String[] objects ={"Array", "Clock", "Controls", "Desktop", "Dictionary", "File", "Flickr", "GraphicsWindow", "ImageList", "Math", "Mouse", "Network", "Program", "Shapes", "Sound", "Stack", "Text", "TextWindow", "Timer", "Turtle"};
         String[] operators ={"=", "+", "-", "*", "/", ">", "<", ">=", "<=", "<>", "And", "Or"};
-        ArrayList<Token> AllTokens = new ArrayList<Token>();
-        AllTokens = getKeywords(keywords);
-        AllTokens = getObjects(AllTokens, objects);
-        AllTokens = getVariables(AllTokens, objects);
-        AllTokens = getMethods(AllTokens);        
-        AllTokens = getOperators(AllTokens, operators);
-        AllTokens = getLiterals(AllTokens, objects);
-        for (int i = 0; i < AllTokens.size();i++){
-            System.out.println(AllTokens.get(i).toString());
-        }
-    }
-
-    static ArrayList<Token> getKeywords(String[] keywords){
+        String prev = "0";
+        String curr = "";
+        String next = "";
+        int line = 0;
         ArrayList<Token> tokens = new ArrayList<Token>();
+        String divider = "===========================================================================================================================================================================================================";       
+        //tokens = getLiterals(tokens, objects);
         try {
             File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
             Scanner reader = new Scanner(subset);
-            while (reader.hasNext()) {
-                String data = reader.next();
-                for (int i=0;i<keywords.length;i++){                    
-                    if (data.equals(keywords[i])){  
-                        Token t = new Token("Keyword", keywords[i].trim());
-                        tokens.add(t);
-                        
-                        //System.out.println("data: " + data + ", keyword: " + keywords[i]);
-                    }
-                }
-            }
-            reader.close();
-        } catch (FileNotFoundException e){
-            System.out.println("File not found!");
-            e.printStackTrace();
-        }
-
-        return tokens;
-    }
-
-    static ArrayList<Token> getObjects(ArrayList<Token> t, String[] objects){
-        ArrayList<Token> tokens = new ArrayList<Token>();
-        tokens = t;
-        try {
-            File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
-            Scanner reader = new Scanner(subset);
-            while (reader.hasNextLine()) {
-                String data = reader.nextLine();
-                for (int i=0;i< objects.length;i++){
-                    if (data.contains(objects[i])){
-                        Token newToken = new Token("Object", objects[i]);
-                        tokens.add(newToken);
-                    }
-                }
-            }
-            reader.close();
-        } catch (FileNotFoundException e){
-            System.out.println("File not found!");
-            e.printStackTrace();
-        }
-
-        return tokens;
-    }
-
-    static ArrayList<Token> getVariables(ArrayList<Token> t, String[] objects){
-        ArrayList<Token> tokens = new ArrayList<Token>();
-        ArrayList<String> declared = new ArrayList<String>();
-        tokens = t;
-        try {
-            File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
-            Scanner reader = new Scanner(subset);
-            while (reader.hasNextLine()) {
-                String data = reader.nextLine();
-                if (data.contains("=")&&!data.startsWith("If")&&!data.startsWith("ElseIf")){
-                    String[] dataList = data.split("=");
-                    String[] nameList = dataList[0].split("\\.");                     
-                    /*boolean isPresent = false;
-                    for (int i = 0;i < objects.length;i++){
-                        if (objects[i].compareTo(nameList[0])==0){
-                           isPresent = true;
+            while (reader.hasNextLine()){
+                line++;
+                String lineData = reader.nextLine();
+                String[] data = lineData.split("\\s+");
+                boolean buildingString = false;                                                    
+                StringBuilder buildString = new StringBuilder(100);
+                for (int i = 0;i < data.length;i++){
+                    curr = data[i]; 
+                    if (data.length > 1&&i < data.length-1){
+                        next = data[i+1];
+                        if (i > 0){
+                            prev = data[i-1];
+                        }
+                        else {                            
+                            prev = "StartofLine";
                         }
                     }
-                    if (!isPresent){
-                        //boolean isDeclared = false;
-                        /*if (declared.size() != 0){
-                            for (int i = 0;i < declared.size();i++){
-                                if (nameList[0].equals(declared.get(i))){
-                                    isDeclared = true;
-                                }
-                            }
-                            if (!isDeclared){*/
-                                /*********************
-                                 * Delete when uncommenting the rest*/
-                                boolean isPresent = false;
-                                for (int i = 0;i < objects.length;i++){
-                                    if (objects[i].compareTo(nameList[0])==0){
-                                    isPresent = true;
+                    else{
+                        next = "EndOfLine";
+                    }
+                    
+                    if (!curr.equals(" ")){
+                        //Check for keywords
+                        String[] response = getKeywords(keywords, curr);
+                        if (response[0].equals("true")){
+                            Token t = new Token("Keyword", response[1]);
+                            tokens.add(t);
+                            System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);
+                        }
+                        //Check for operators
+                        else {
+                            response = getOperators(operators, curr);
+                            if (response[0].equals("true")){
+                                Token newOperator = new Token("Operator", response[1]);
+                                tokens.add(newOperator);
+                                System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + newOperator.toString() + "\n" + divider);
+                                if (response[1].equals("=")){  
+                                    if (next.startsWith("\"")&&!next.endsWith("\"")){
+                                        buildingString = true;
+                                        buildString.append(next);
                                     }
+                                    else if (next.startsWith("\"")&&next.endsWith("\"")){
+                                        buildString.append(next);
+                                        Token t = new Token("Literal", buildString.toString());
+                                        tokens.add(t);
+                                        System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);
+                                        buildString = new StringBuilder(100);
+                                    }
+                                    else {
+                                        boolean exists = false;
+                                        boolean isObject = false;
+                                        for (int j = 0; j < objects.length;j++){
+                                            if (next.contains(objects[j])){
+                                                isObject = true;
+                                            }
+                                        }
+                                        for (int j = 0; j < tokens.size();j++){
+                                            if (tokens.get(j).getValue().equals(next)){
+                                                exists = true;
+                                            }
+                                        } 
+                                        if (!isObject&&!exists){     
+                                            if (next.contains(")")){
+                                                int end = next.indexOf(")");                                                                                           
+                                                Token t = new Token("Literal", next.substring(0, end));
+                                                tokens.add(t);
+                                                System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + next + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);
+                                                
+                                            }
+                                            else {                                                                                           
+                                                Token t = new Token("Literal", next);
+                                                tokens.add(t);
+                                                System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + next + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);
+                                                
+                                            }
+                                        }
+                                    }                                  
+                                                               
+                            }
+                            }
+                            else{
+                                //check for objects
+                                response = getObjects(objects, curr);
+                                if (response[0].equals("true")){
+                                    Token t = new Token("Object", response[1]);
+                                    tokens.add(t);
+                                    System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);
                                 }
-                                 /**/
-                                 if(!isPresent){
-                                    Token newVariable = new Token("Variable", dataList[0].trim());
-                                    tokens.add(newVariable);
-                                    declared.add(nameList[0]);
-                                 }
-                                //System.out.println(dataList[0]);
-                            /*}
+                                //check for methods
+                                if (curr.contains(".")&&!curr.endsWith(".")){
+                                    String[] newString = curr.split("\\.");
+                                    if (newString[1].contains("(")){
+                                        int end =  newString[1].indexOf("(");  
+                                        Token t = new Token("Method", newString[1].substring(0,end).trim());
+                                        tokens.add(t);
+                                        System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);                                            
+                                    }
+                                    else{
+                                        Token t = new Token("Method", newString[1]);
+                                        tokens.add(t);
+                                        System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);                                        
+                                    }
+                                    //System.out.println(newString[1]);                                    
+                                }
+                                else if (curr.endsWith("()")){
+                                    Token t = new Token("Method", curr.trim());
+                                    System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);                                  
+                                }
+                                else if(next.equals("=")){
+                                        //Check for variables 
+                                    int initSize = tokens.size();
+                                    tokens = getVariables(objects, curr, tokens);
+                                    if (tokens.size() > initSize){
+                                        System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + tokens.get(tokens.size()-1).toString() + "\n" + divider);
+                                    }                                    
+                                }
+                                else if (buildingString&&!curr.endsWith("\"")&&!curr.startsWith("\"")) {
+                                    buildString.append(" " + curr);
+                                }
+                                else if (curr.endsWith("\"")){
+                                    buildingString = false;
+                                    buildString.append(" " + curr);
+                                    Token t = new Token("Literal", buildString.toString());
+                                    tokens.add(t);
+                                    System.out.println(divider + "\n" + "Line: " + line + "\t\t" + "Current Token: " + curr + "\t\t" + "Previous Token: " + prev + "\t\t" + "Next Token: " + next + "\t\t" + t.toString() + "\n" + divider);
+                                    buildString = new StringBuilder(100);
+                                }     
+                            }                            
                         }
-                        else{
-                            Variable newVariable = new Variable(dataList[0], dataList[1]);
-                            tokens.add(newVariable);
-                            declared.add(nameList[0]);
-                            //System.out.println(dataList[0]);
-                        }*/
-                    //}
+                    }
                 }
+                
             }
             reader.close();
         } catch (FileNotFoundException e){
             System.out.println("File not found!");
             e.printStackTrace();
         }
-
-        return tokens;
     }
 
-    static ArrayList<Token> getMethods(ArrayList<Token> t){
+    static String[] getKeywords(String[] keywords, String data){
+        String[] response = new String[2];
+        response[0] = "false";
+        for (int i=0;i<keywords.length;i++){                    
+            if (data.equals(keywords[i])){  
+                response[0] = "true";
+                response[1] = keywords[i];
+                //System.out.println("data: " + data + ", keyword: " + keywords[i]);
+            }
+        }
+        return response;
+    }
+
+    static String[] getObjects(String[] objects, String data){
+        String[] response = new String[2];
+        response[0] = "false";
+        if (data.contains(".")){
+            String[] newObject = data.split("\\.");
+            
+            for (int i=0;i< objects.length;i++){
+                if (newObject[0].equals(objects[i])){
+                    response[0] = "true";
+                    response[1] = objects[i];
+                }
+            }
+        }
+        else {            
+            for (int i=0;i< objects.length;i++){
+                if (data.equals(objects[i])){
+                    response[0] = "true";
+                    response[1] = objects[i];
+                }
+            }
+        }
+        return response;
+    }
+
+    static ArrayList<Token> getVariables(String[] objects, String curr, ArrayList<Token> tokens){
+        boolean isPresent = false;
+        ArrayList<Token> tempList = tokens;
+        for (int j = 0;j < objects.length;j++){
+            if (curr.contains(objects[j])){
+                isPresent = true;
+            }
+        }
+        if (!isPresent){
+            if (curr.contains("(")){
+                int begin = curr.indexOf("(");               
+                Token t = new Token("Variable", curr.substring(begin+1));
+                tempList.add(t);
+            }
+            else{                
+                Token t = new Token("Variable", curr);
+                tempList.add(t);
+            }
+        }
+        
+        return tempList;
+    }
+
+    /*static ArrayList<Token> getMethods(ArrayList<Token> t){
         ArrayList<Token> tokens = new ArrayList<Token>();
         tokens = t;
         try {
@@ -179,133 +279,58 @@ public class App {
         }
 
         return tokens;
-    }
+    }*/
 
-    static ArrayList<Token> getLiterals(ArrayList<Token> t, String[] objects){
-        ArrayList<Token> tokens = new ArrayList<Token>();
-        tokens = t;
-        try {
-            File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
-            Scanner reader = new Scanner(subset); 
-            while (reader.hasNextLine()) {
-                String data = reader.nextLine();
-                boolean isPresent = false;
-                if (data.contains("(")){   
-                    //Check for strings and other values    
-                    String enclosedString = data.substring(data.indexOf("(")+1, data.indexOf(")"));                                            
-                    String[] components = enclosedString.split(",");
-                    if (enclosedString.contains("\"")){
-                        components = enclosedString.split("\",");
-                        components[0] = components[0].concat("\"");
-                        for (int i = 0;i < components.length;i++){
-                            if(components[i].contains("\"")){
-                                Token newString = new Token("Literal", components[i]);
-                                tokens.add(newString);
-                            }
-                            else {                                
-                                boolean exists = false;
-                                int tokenIndex = 900;
-                                for(int j = 0;j <tokens.size();j++){
-                                    if (tokens.get(j).toString().contains(components[i])){
-                                        exists = true;
-                                        tokenIndex = j;
-                                    }
-                                }
-                                if (exists) {                                    
-                                    Token newToken = new Token(tokens.get(tokenIndex).getType(),tokens.get(tokenIndex).getValue());
-                                    tokens.add(newToken);
-                                }                                
-                                else{
-                                    Token newToken = new Token("Literal", components[i].trim());
-                                    tokens.add(newToken);
-                                }
-                            }
-                        }
-                    }
-                    else if(components.length < 2&&!components[0].equals("")&&!data.startsWith("If")&&!data.startsWith("ElseIf")){
-                            Token newToken = new Token("Literal", components[0].trim());
-                            tokens.add(newToken);
-                    }
-                    else if (components.length > 2){
-                        for (int i = 0;i < components.length;i++){
-                                boolean exists = false;
-                                int tokenIndex = 900;
-                                for(int j = 0;j <tokens.size();j++){
-                                    if (tokens.get(j).toString().contains(components[i])){
-                                        exists = true;
-                                        tokenIndex = j;
-                                    }
-                                }
-                                if (exists) {                                    
-                                    Token newToken = new Token(tokens.get(tokenIndex).getType(),tokens.get(tokenIndex).getValue());
-                                    tokens.add(newToken);
-                                }                                
-                                else{
-                                    Token newToken = new Token("Literal", components[i].trim());
-                                    tokens.add(newToken);
-                                }
-                        }
-                    }
-                    else if((data.startsWith("If")&&enclosedString.contains("="))||data.startsWith("ElseIf")&&enclosedString.contains("=")){
-                        String[] conditionList = enclosedString.split("=");
-                        Token newToken = new Token("Variable", conditionList[0]);
-                        Token newToken2 = new Token("Literal", conditionList[1]);
-                        tokens.add(newToken);
-                        tokens.add(newToken2);
-                    }
-                }
-                else if (data.contains("=")){
-                        if (data.contains("\"")){                        
-                            int start = data.indexOf("\"");
-                            int end = data.lastIndexOf("\"");
-                            String newString = data.substring(start, end+1);
-                            Token newToken = new Token("Literal", newString);
-                            tokens.add(newToken);
-                        }
-                        else {   
-                            String[] stringList = data.split("=");                   
-                            for (int i = 0;i<objects.length;i++){
-                                if(stringList[1].contains(objects[i])&&stringList[1].contains(".")){                                    
-                                    isPresent = true;
-                                }
-                            }
-                            if (!isPresent){
-                                Token newString = new Token("Literal", stringList[1]);
-                                tokens.add(newString);
-                            }
-                        }
-                }
+    /*static ArrayList<Token> getLiterals(ArrayList<Token> oToken, String[] objects, String curr, boolean buildingString){
+        String newString = "";                                                                        
+        boolean exists = false;
+        int tokenIndex = 900;
+        String[] response = getObjects(objects, curr);
+        ArrayList<Token> tokens = oToken;
+        for (int j = 0;j < tokens.size();j++){
+            if (tokens.get(j).toString().contains(curr)){
+                exists = true;
+                tokenIndex = j;
             }
-            reader.close();
-        } catch (FileNotFoundException e){
-            System.out.println("File not found!");
-            e.printStackTrace();
+        }
+        if (exists&&!buildingString){
+            Token t = new Token(tokens.get(tokenIndex).getType(),tokens.get(tokenIndex).getValue());
+            tokens.add(t);
+        }
+        else if (response[0].equals("true")&&!buildingString){
+            Token t = new Token("Object", response[1]);
+            tokens.add(t);
+        }
+        else if (curr.startsWith("\"")){
+            buildingString = true;
+            newString.concat(curr);
+        }
+        else if (buildingString&&!curr.endsWith("\"")){                                            
+            newString.concat(curr);
+        }
+        else if (curr.endsWith("\"")){
+            newString.concat(curr);
+            buildingString = false;
+            Token finalString = new Token("Literal", newString);
+            tokens.add(finalString);        
+        }
+        else {
+            Token t = new Token("Literal", curr);
+            tokens.add(t);
         }
 
         return tokens;
-    }
+    }*/
 
-    static ArrayList<Token> getOperators(ArrayList<Token> t, String[] operators){
-        ArrayList<Token> tokens = new ArrayList<Token>();
-        tokens = t;
-        try {
-            File subset = new File("C:/Users/Babz/Documents/Interpreter-2021/Interpreter/subset.txt");
-            Scanner reader = new Scanner(subset); 
-            while (reader.hasNext()) {
-                String data = reader.next();
-                for (int i = 0;i < operators.length;i++){
-                    if (data.contains(operators[i])){
-                        Token newOperator = new Token("Operator", operators[i]);
-                        tokens.add(newOperator);
-                    }
-                }
+    static String[] getOperators(String[] operators, String data){
+        String[] response = new String[2];
+        response[0] = "false";
+        for (int i = 0;i < operators.length;i++){
+            if (data.contains(operators[i])){
+                response[0] = "true";
+                response[1] = operators[i];
             }
-            reader.close();
-        } catch (FileNotFoundException e){
-            System.out.println("File not found!");
-            e.printStackTrace();
         }
-
-        return tokens;
+        return response;
     }
 }
