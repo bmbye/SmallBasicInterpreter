@@ -14,7 +14,7 @@ public class App {
         AllTokens = getVariables(AllTokens, objects);
         AllTokens = getMethods(AllTokens);        
         AllTokens = getOperators(AllTokens, operators);
-        //getLiterals(AllTokens);
+        AllTokens = getLiterals(AllTokens, objects);
         for (int i = 0; i < AllTokens.size();i++){
             System.out.println(AllTokens.get(i).toString());
         }
@@ -29,7 +29,7 @@ public class App {
                 String data = reader.next();
                 for (int i=0;i<keywords.length;i++){                    
                     if (data.equals(keywords[i])){  
-                        Token t = new Token("Keyword", keywords[i]);
+                        Token t = new Token("Keyword", keywords[i].trim());
                         tokens.add(t);
                         
                         //System.out.println("data: " + data + ", keyword: " + keywords[i]);
@@ -81,7 +81,7 @@ public class App {
                 if (data.contains("=")&&!data.startsWith("If")&&!data.startsWith("ElseIf")){
                     String[] dataList = data.split("=");
                     String[] nameList = dataList[0].split("\\.");                     
-                    boolean isPresent = false;
+                    /*boolean isPresent = false;
                     for (int i = 0;i < objects.length;i++){
                         if (objects[i].compareTo(nameList[0])==0){
                            isPresent = true;
@@ -96,9 +96,20 @@ public class App {
                                 }
                             }
                             if (!isDeclared){*/
-                                Variable newVariable = new Variable(dataList[0], dataList[1]);
-                                tokens.add(newVariable);
-                                declared.add(nameList[0]);
+                                /*********************
+                                 * Delete when uncommenting the rest*/
+                                boolean isPresent = false;
+                                for (int i = 0;i < objects.length;i++){
+                                    if (objects[i].compareTo(nameList[0])==0){
+                                    isPresent = true;
+                                    }
+                                }
+                                 /**/
+                                 if(!isPresent){
+                                    Token newVariable = new Token("Variable", dataList[0].trim());
+                                    tokens.add(newVariable);
+                                    declared.add(nameList[0]);
+                                 }
                                 //System.out.println(dataList[0]);
                             /*}
                         }
@@ -108,7 +119,7 @@ public class App {
                             declared.add(nameList[0]);
                             //System.out.println(dataList[0]);
                         }*/
-                    }
+                    //}
                 }
             }
             reader.close();
@@ -133,15 +144,32 @@ public class App {
                     String[] name = methodList[1].split(" ");
                     if (name[0].contains("(")){
                         int end = name[0].indexOf("(");  
-                        Token newMethod = new Token("Method", name[0].substring(0,end));
+                        Token newMethod = new Token("Method", name[0].substring(0,end).trim());
                         tokens.add(newMethod);                      
                         //System.out.println(name[0].substring(0,end));
                     }
                     else{
-                        Token newMethod = new Token("Method", name[0]); 
+                        Token newMethod = new Token("Method", name[0].trim()); 
                         tokens.add(newMethod);
                         //System.out.println(name[0]);
                     }
+                }
+                else if(data.endsWith("()")){
+                    Token newMethod = new Token("Method", data.trim());
+                    tokens.add(newMethod); 
+                }
+
+                boolean isPresent = false;
+                int tokenIndex = 900;
+                for (int i = 0;i<tokens.size();i++){
+                    if(tokens.get(i).getType().equals("Method")&&(tokens.get(i).toString().contains(data))){
+                        isPresent = true;
+                        tokenIndex = i;
+                    }
+                }
+                if(isPresent){
+                    Token newMethod = new Token("Method", tokens.get(tokenIndex).getValue());
+                    tokens.add(newMethod);
                 }
             }
             reader.close();
@@ -153,7 +181,7 @@ public class App {
         return tokens;
     }
 
-    static void /*ArrayList<Token>*/ getLiterals(ArrayList<Token> t){
+    static ArrayList<Token> getLiterals(ArrayList<Token> t, String[] objects){
         ArrayList<Token> tokens = new ArrayList<Token>();
         tokens = t;
         try {
@@ -162,13 +190,90 @@ public class App {
             while (reader.hasNextLine()) {
                 String data = reader.nextLine();
                 boolean isPresent = false;
-                for (int i = 0;i < tokens.size();i++){
-                    if (data.contains(tokens.get(i).getValue())){
-                        isPresent = true;
+                if (data.contains("(")){   
+                    //Check for strings and other values    
+                    String enclosedString = data.substring(data.indexOf("(")+1, data.indexOf(")"));                                            
+                    String[] components = enclosedString.split(",");
+                    if (enclosedString.contains("\"")){
+                        components = enclosedString.split("\",");
+                        components[0] = components[0].concat("\"");
+                        for (int i = 0;i < components.length;i++){
+                            if(components[i].contains("\"")){
+                                Token newString = new Token("Literal", components[i]);
+                                tokens.add(newString);
+                            }
+                            else {                                
+                                boolean exists = false;
+                                int tokenIndex = 900;
+                                for(int j = 0;j <tokens.size();j++){
+                                    if (tokens.get(j).toString().contains(components[i])){
+                                        exists = true;
+                                        tokenIndex = j;
+                                    }
+                                }
+                                if (exists) {                                    
+                                    Token newToken = new Token(tokens.get(tokenIndex).getType(),tokens.get(tokenIndex).getValue());
+                                    tokens.add(newToken);
+                                }                                
+                                else{
+                                    Token newToken = new Token("Literal", components[i].trim());
+                                    tokens.add(newToken);
+                                }
+                            }
+                        }
+                    }
+                    else if(components.length < 2&&!components[0].equals("")&&!data.startsWith("If")&&!data.startsWith("ElseIf")){
+                            Token newToken = new Token("Literal", components[0].trim());
+                            tokens.add(newToken);
+                    }
+                    else if (components.length > 2){
+                        for (int i = 0;i < components.length;i++){
+                                boolean exists = false;
+                                int tokenIndex = 900;
+                                for(int j = 0;j <tokens.size();j++){
+                                    if (tokens.get(j).toString().contains(components[i])){
+                                        exists = true;
+                                        tokenIndex = j;
+                                    }
+                                }
+                                if (exists) {                                    
+                                    Token newToken = new Token(tokens.get(tokenIndex).getType(),tokens.get(tokenIndex).getValue());
+                                    tokens.add(newToken);
+                                }                                
+                                else{
+                                    Token newToken = new Token("Literal", components[i].trim());
+                                    tokens.add(newToken);
+                                }
+                        }
+                    }
+                    else if((data.startsWith("If")&&enclosedString.contains("="))||data.startsWith("ElseIf")&&enclosedString.contains("=")){
+                        String[] conditionList = enclosedString.split("=");
+                        Token newToken = new Token("Variable", conditionList[0]);
+                        Token newToken2 = new Token("Literal", conditionList[1]);
+                        tokens.add(newToken);
+                        tokens.add(newToken2);
                     }
                 }
-                if (!isPresent) {
-                    System.out.println(data);
+                else if (data.contains("=")){
+                        if (data.contains("\"")){                        
+                            int start = data.indexOf("\"");
+                            int end = data.lastIndexOf("\"");
+                            String newString = data.substring(start, end+1);
+                            Token newToken = new Token("Literal", newString);
+                            tokens.add(newToken);
+                        }
+                        else {   
+                            String[] stringList = data.split("=");                   
+                            for (int i = 0;i<objects.length;i++){
+                                if(stringList[1].contains(objects[i])&&stringList[1].contains(".")){                                    
+                                    isPresent = true;
+                                }
+                            }
+                            if (!isPresent){
+                                Token newString = new Token("Literal", stringList[1]);
+                                tokens.add(newString);
+                            }
+                        }
                 }
             }
             reader.close();
@@ -177,7 +282,7 @@ public class App {
             e.printStackTrace();
         }
 
-        //return tokens;
+        return tokens;
     }
 
     static ArrayList<Token> getOperators(ArrayList<Token> t, String[] operators){
