@@ -1,0 +1,22 @@
+Non-terminals
+<program> -> start <line> end
+<line> -> {<line_number> <statement>}
+<statement> -> <rem> | <keyword> <expr> | <function>| <if_statement>
+<rem> -> REM
+<keyword> -> LET | NEXT | END | INPUT
+<function> -> (<expr> | <string> {<splitter> {<function>}})
+<splitter> -> , | ; | :
+<string> -> STRING
+<if_statement> -> IF <condition> THEN <expr>
+<condition> -> <expr> (> | < | =) <expr>
+<expr> -> <term> (+ | -) <term>
+<term> -> <factor> (+ | -) <factor>
+<factor> -> INTEGER | FLOAT | VARIABLE
+
+Terminals
+REM = {letter}
+ENDLINE = \n
+VARIABLE = {letter} {digit}
+STRING = "{character}"
+INTEGER = [-]{digit}
+FLOAT = [-]{digit}[.digit]
