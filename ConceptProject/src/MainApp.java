@@ -32,6 +32,7 @@ public class MainApp {
             System.out.println("]\n");
         }*/
 
+        //This parses one line at a time right now. It should parse it all in one call when I'm fully done.
         printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
