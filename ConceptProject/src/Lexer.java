@@ -10,8 +10,8 @@ public class Lexer {
     private final char[] splitter = {',', ';'};
     private final String[] splitDescription = {"COMMA", "SEMI-COLON"};
     private final String[] function = {"PRINT", "LET", "INPUT", "NEXT"};
-    private final char[] operators = {'+', '-', '*', '/', '(', ')', '=', '<', '>'};
-    private final String[] opDescription = {"OP_ADD", "OP_SUB", "OP_MUL", "OP_DIV", "LP", "RP", "OP_EQU", "OP_LESS", "OP_GREATER"};
+    private final char[] operators = {'+', '-', '*', '/', '(', ')', '=', '<', '>', '^'};
+    private final String[] opDescription = {"OP_ADD", "OP_SUB", "OP_MUL", "OP_DIV", "LP", "RP", "OP_EQU", "OP_LESS", "OP_GREATER", "OP_POW"};
     private final File file;
     private final Scanner reader;
 
@@ -162,10 +162,16 @@ public class Lexer {
                 System.out.println(currentLine.charAt(3));*/
                 return result;
             }
-            if(isOperator(Character.toString(temp)) && next.length() == 0) // get the line number
+            if(isOperator(Character.toString(temp)) && next.length() == 0 && !isString) // get the line number
             {
+                //System.out.println(next);
+                //System.out.println(temp);
+
                 next += temp;
-                if(currentLine.length() > 1)
+                //System.out.println(next);
+                result = checkToken(next);
+                return result;
+                /*if(currentLine.length() > 1)
                 {
                     if(!Character.isDigit(currentLine.charAt(i+1)))
                     {
@@ -177,8 +183,14 @@ public class Lexer {
                 {
                     result = checkToken(next);
                     return result;
-                }
-
+                }*/
+            }else if(isOperator(Character.toString(temp)) && next.length() != 0 && isString)
+            {
+                next += temp;
+            } else if(isOperator(Character.toString(temp)) && next.length() != 0)
+            {
+                result = checkToken(next);
+                return result;
             } else if(isSplitter(temp) && !isString)
             {
                 if(! (next.length() > 0))

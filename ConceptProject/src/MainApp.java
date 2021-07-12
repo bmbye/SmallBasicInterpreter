@@ -6,8 +6,29 @@ public class MainApp {
     public static void main(String [] args) throws FileNotFoundException {
 
         String basic = "BASIC_INPUT_FILE_2.txt";
+        String bnf = "Non-terminals\n" +
+                "<program> -> start <line> end\n" +
+                "<line> -> {<line_number> <statement>}\n" +
+                "<statement> -> <rem> | <keyword> <expr> | <function>| <if_statement>\n" +
+                "<rem> -> REM\n" +
+                "<keyword> -> LET | NEXT | END | INPUT\n" +
+                "<function> -> (<expr> | <string> {<splitter> {<function>}})\n" +
+                "<splitter> -> , | ; | :\n" +
+                "<string> -> STRING\n" +
+                "<if_statement> -> IF <condition> THEN <expr>\n" +
+                "<condition> -> <expr> (> | < | =) <expr>\n" +
+                "<expr> -> <term> (+ | -) <term>\n" +
+                "<term> -> <factor> (+ | -) <factor>\n" +
+                "<factor> -> INTEGER | FLOAT | VARIABLE\n" +
+                "\n" +
+                "Terminals\n" +
+                "REM = {letter}\n" +
+                "ENDLINE = \\n\n" +
+                "VARIABLE = {letter} {digit}\n" +
+                "STRING = \"{character}\"\n" +
+                "INTEGER = [-]{digit}\n" +
+                "FLOAT = [-]{digit}[.digit]";
         Scanner input = new Scanner(System.in);
-        Scanner reader;
         File file;
         Lexer lexer;
         Parser parser;
@@ -16,7 +37,6 @@ public class MainApp {
             try {
                 file = new File(basic);
                 lexer = new Lexer(file);
-                reader = new Scanner(file);
                 parser = new Parser(lexer);
                 break;
             } catch (FileNotFoundException e) {
@@ -25,41 +45,38 @@ public class MainApp {
             }
         }
 
-        /*while(lexer.canLex())
+        boolean toggle = false;
+
+        if(toggle)
         {
-            System.out.println(lexer.lex());
+            while(lexer.canLex())
+            {
+                System.out.println(lexer.lex());
+                System.out.print("[");
+                for(int i = 0; i < 10; i++)
+                    System.out.print("=====");
+                System.out.println("]\n");
+            }
+        }else
+        {
+            System.out.println(bnf);
             System.out.print("[");
-            for(int i = 0; i < 10; i++)
+            for(int i = 0; i < 6; i++)
                 System.out.print("=====");
             System.out.println("]\n");
-        }*/
 
+            Node n = parser.parse();
 
-        //This parses one line at a time right now. It should parse it all in one call when I'm fully done.
-        while(parser.canParse())
-        {
-            printNodeInOrder(parser.parse());
+            printNodeInOrder(n);
+
+            System.out.println();
+            System.out.print("[");
+            for(int i = 0; i < 6; i++)
+                System.out.print("=====");
+            System.out.println("]\n");
+
+            printNodePostOrder(n);
         }
-
-        /*printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());*/
-
 
         lexer.close();
     }
@@ -77,7 +94,7 @@ public class MainApp {
         printNodeInOrder(n.getRight());
     }
 
-    public static void printNode(Node n)
+    public static void printNodePostOrder(Node n)
     {
         if(n == null)
         {
@@ -85,8 +102,10 @@ public class MainApp {
             return;
         }
 
-        printNode(n.getLeft());
-        printNode(n.getRight());
-        System.out.println(n);
+        printNodePostOrder(n.getLeft());
+        printNodePostOrder(n.getRight());
+        System.out.print(n.getToken().getValue() + "\t");
+        if(n.getToken().getType().equals("LINE_NUMBER"))
+            System.out.println();
     }
 }
