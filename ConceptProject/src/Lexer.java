@@ -7,8 +7,8 @@ public class Lexer {
     private final String[] keywords = {"Else", "ElseIf", "EndFor", "EndIf", "EndSub", "EndWhile", "For", "Goto", "If", "Step",
                                         "Sub", "Then", "To", "While", "THEN", "IF", "FOR", "TO", "END", "DEF", "REM",
                                             "STEP"};
-    private final char[] splitter = {',', ';', '.'};
-    private final String[] splitDescription = {"COMMA", "SEMI-COLON", "PERIOD"};
+    private final char[] splitter = {',', ';'};
+    private final String[] splitDescription = {"COMMA", "SEMI-COLON"};
     private final String[] function = {"PRINT", "LET", "INPUT", "NEXT"};
     private final char[] operators = {'+', '-', '*', '/', '(', ')', '=', '<', '>'};
     private final String[] opDescription = {"OP_ADD", "OP_SUB", "OP_MUL", "OP_DIV", "LP", "RP", "OP_EQU", "OP_LESS", "OP_GREATER"};
@@ -55,7 +55,7 @@ public class Lexer {
         {
             if(lastToken.getValue().equals("DEF"))
             {
-                result.setType("METHOD");
+                result.setType("FUNCTION");
             }else if(lastToken.getValue().equals("END"))
             {
                 result.setType("EOF");
@@ -80,7 +80,7 @@ public class Lexer {
             if(result.getValue().equals("REM"))
             {
                 result = new Token(result.getLine(), "REM",  currentLine);
-                remark = true;
+                //remark = true;
             }
         }
 
@@ -89,8 +89,9 @@ public class Lexer {
         /*System.out.println(currentLine);
         System.out.println(result.getValue().length());
         System.out.println(result);*/
-
+        //System.out.println("Current Line:_" + currentLine + "_|");
         currentLine = currentLine.substring(result.getValue().length());
+        //System.out.println("Current Line:_" + currentLine + "_|");
 
         return result;
     }
@@ -256,6 +257,8 @@ public class Lexer {
         int i = 0;
         char t = currentLine.charAt(i);
 
+        //System.out.println("CurrentLine in Number:_" + currentLine+ "_|");
+
         while(Character.isDigit(t))
         {
             if(!isDigit)
@@ -281,6 +284,8 @@ public class Lexer {
 
     private Token checkToken(String n)
     {
+
+        //System.out.println("Check Token: " + n);
 
         if(checkString(n))
         {
@@ -442,17 +447,20 @@ public class Lexer {
         if(currentLine == null || currentLine.length() == 0 || currentLine.length() == 1 && currentLine.charAt(0) == ' ')
         {
             lineNum = false;
-            if(reader.hasNext())
-                return reader.nextLine();
-        }
+            if(reader.hasNextLine())
+            {
+                String temp = reader.nextLine();
+                //System.out.println("Temp:" + temp);
+                return temp;
+            }
 
-        if(remark)
+        }/*else if(remark)
         {
             remark = false;
             lineNum = false;
             if(reader.hasNext())
                 return reader.nextLine();
-        }
+        }*/
 
         return currentLine;
     }

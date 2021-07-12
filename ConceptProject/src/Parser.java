@@ -34,16 +34,28 @@ public class Parser {
 
     private Node string()
     {
-        Node node;
+        Node node;// = expr();
         Token token = currentToken;
+        //System.out.println(token);
+
+        if(token.getType().equals("STRING"))
+        {
+            consume("STRING");
+            return new Node(token);
+        }
 
         if(token.getType().equals("SEMI-COLON"))
         {
             consume("SEMI-COLON");
-            return new Node(token);
+            if(currentToken.getType().equals("VARIABLE"))
+                return new Node(token, expr());
+            else
+                return new Node(token, string());
+
+            //return new Node(token, expr());
         }
 
-        return null;
+        return new Node(token);
     }
 
     private Node factor()
@@ -66,8 +78,25 @@ public class Parser {
             if(currentToken.getType().equals("OP_EQU"))
             {
                 return new Node(token, expr());
+            }else if(currentToken.getType().equals("SEMI-COLON"))
+            {
+                return new Node(token, string());
             }
             return new Node(token);
+        }else if(token.getType().equals("STRING"))
+        {
+            consume("STRING");
+            if(currentToken.getType().equals("SEMI-COLON"))
+                return new Node(token, string());
+        }else if(token.getType().equals("SEMI-COLON"))
+        {
+            //System.out.println(currentToken);
+            consume("SEMI-COLON");
+            //System.out.println(currentToken);
+            if(currentToken.getType().equals("STRING"))
+                return new Node(token, string());
+            else
+                return new Node(token, expr());
         }
         else
         {
@@ -111,7 +140,7 @@ public class Parser {
         Node node = term();
         Token token;
 
-        while(currentToken.getType().equals("OP_ADD") || currentToken.getType().equals("OP_SUB") || currentToken.getType().equals("OP_EQU"))
+        while(currentToken.getType().equals("KEYWORD") ||currentToken.getType().equals("OP_ADD") || currentToken.getType().equals("OP_SUB") || currentToken.getType().equals("OP_EQU"))
         {
             token = currentToken;
 
@@ -125,6 +154,9 @@ public class Parser {
             } else if(currentToken.getType().equals("OP_EQU"))
             {
                 consume("OP_EQU");
+            } else if(currentToken.getType().equals("KEYWORD"))
+            {
+                consume("KEYWORD");
             }
 
             node = new Node(node, token, term());
@@ -137,8 +169,9 @@ public class Parser {
     {
         Node node = expr();
         Token token = currentToken;
+        //System.out.println("Con1: " + node + " Token: " + token);
 
-        if(token.getType().equals("OP_LESS") || token.getType().equals("OP_EQU") || token.getType().equals("OP_GREATER"))
+        if(token.getType().equals("THEN") ||token.getType().equals("OP_LESS") || token.getType().equals("OP_EQU") || token.getType().equals("OP_GREATER"))
         {
             if(token.getType().equals("OP_LESS"))
             {
@@ -152,6 +185,10 @@ public class Parser {
             {
                 consume("OP_GREATER");
                 node = new Node(node, token, expr());
+            } else if(token.getType().equals("THEN"))
+            {
+                consume("THEN");
+                node = new Node(node, token, expr());
             }
         }
 
@@ -160,20 +197,29 @@ public class Parser {
 
     private Node ifStatement()
     {
-        Node node = null;
+        Node node = condition();
         Token token = currentToken;
-
-        if(token.getType().equals("CONDITION"))
+        System.out.println(token);
+        if(token.getType().equals("THEN") || token.getType().equals("OP_LESS"))
         {
-            consume("CONDITION");
-            node = condition();
-            if(currentToken.getType().equals("CONDITION"))
+            if(token.getType().equals("OP_LESS"))
             {
-                token = currentToken;
-                consume("CONDITION");
+                consume("OP_LESS");
+                node = new Node(node, token, expr());
+            }
+
+            if(token.getType().equals("THEN"))
+            {
+                consume("THEN");
                 node = new Node(node, token, expr());
             }
         }
+        /*if(token.getType().equals("VARIABLE"))
+        {
+            consume("VARIABLE");
+            node = condition();
+            return new Node(token, node);
+        }*/
 
         return node;
     }
@@ -209,7 +255,9 @@ public class Parser {
             return new Node(token);
         }else if(token.getType().equals("KEYWORD"))
         {
+            System.out.println("Token: " + token);
             consume("KEYWORD");
+            System.out.println("Token Current: " + currentToken);
             return new Node(token, expr());
         }else if(token.getType().equals("FUNCTION"))
         {
@@ -220,7 +268,10 @@ public class Parser {
             consume("IF_STATEMENT");
             return new Node(token, ifStatement());
         } else if(token.getType().equals("EOF"))
+        {
             return new Node(token);
+        }
+
 
         return node;
     }
@@ -259,6 +310,11 @@ public class Parser {
         Token token;
 
         return node;
+    }
+
+    public boolean canParse()
+    {
+        return lexer.canLex();
     }
 
     public Node parse()

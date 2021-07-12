@@ -5,8 +5,9 @@ import java.util.Scanner;
 public class MainApp {
     public static void main(String [] args) throws FileNotFoundException {
 
-        String basic = "BASIC_INPUT_FILE_1.txt";
+        String basic = "BASIC_INPUT_FILE_2.txt";
         Scanner input = new Scanner(System.in);
+        Scanner reader;
         File file;
         Lexer lexer;
         Parser parser;
@@ -15,6 +16,7 @@ public class MainApp {
             try {
                 file = new File(basic);
                 lexer = new Lexer(file);
+                reader = new Scanner(file);
                 parser = new Parser(lexer);
                 break;
             } catch (FileNotFoundException e) {
@@ -32,7 +34,14 @@ public class MainApp {
             System.out.println("]\n");
         }*/
 
+
         //This parses one line at a time right now. It should parse it all in one call when I'm fully done.
+        while(parser.canParse())
+        {
+            printNodeInOrder(parser.parse());
+        }
+
+        /*printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
@@ -49,8 +58,8 @@ public class MainApp {
         printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
         printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
-        printNodeInOrder(parser.parse());
+        printNodeInOrder(parser.parse());*/
+
 
         lexer.close();
     }
