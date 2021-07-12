@@ -59,11 +59,13 @@ public class MainApp {
             }
         }else
         {
+            System.out.println("BNF:");
             System.out.println(bnf);
             System.out.print("[");
             for(int i = 0; i < 6; i++)
                 System.out.print("=====");
             System.out.println("]\n");
+
 
             Node n = parser.parse();
 
@@ -75,6 +77,7 @@ public class MainApp {
                 System.out.print("=====");
             System.out.println("]\n");
 
+            System.out.println("Post-fix:");
             printNodePostOrder(n);
         }
 
