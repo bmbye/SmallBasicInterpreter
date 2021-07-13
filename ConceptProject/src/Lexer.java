@@ -1,3 +1,9 @@
+/* * Class:       CS 4308 Section 01
+ * Term:        Summer 2021
+ * Name:        Erik Delgadillo, Ahsan Jamal, Momodou Mbye
+ * Instructor:   Deepa Muralidhar
+ * Project:  Deliverable 2 Parser - Java */
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;

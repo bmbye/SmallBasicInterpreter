@@ -1,10 +1,12 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+/* * Class:       CS 4308 Section 01
+ * Term:        Summer 2021
+ * Name:        Erik Delgadillo, Ahsan Jamal, Momodou Mbye
+ * Instructor:   Deepa Muralidhar
+ * Project:  Deliverable 2 Parser - Java */
 
 public class Parser {
     private Lexer lexer;
     private Token currentToken;
-    private Node root;
 
     public Parser(Lexer l)
     {

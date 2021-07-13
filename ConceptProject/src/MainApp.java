@@ -1,3 +1,9 @@
+/* * Class:       CS 4308 Section 01
+ * Term:        Summer 2021
+ * Name:        Erik Delgadillo, Ahsan Jamal, Momodou Mbye
+ * Instructor:   Deepa Muralidhar
+ * Project:  Deliverable 2 Parser - Java */
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -5,7 +11,7 @@ import java.util.Scanner;
 public class MainApp {
     public static void main(String [] args) throws FileNotFoundException {
 
-        String basic = "BASIC_INPUT_FILE_2.txt";
+        String basic = "BASIC_INPUT_FILE_1.txt";
         String bnf = "Non-terminals\n" +
                 "<program> -> start <line> end\n" +
                 "<line> -> {<line_number> <statement>}\n" +
