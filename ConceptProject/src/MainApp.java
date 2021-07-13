@@ -45,41 +45,25 @@ public class MainApp {
             }
         }
 
-        boolean toggle = false;
+        System.out.println("BNF:");
+        System.out.println(bnf);
+        System.out.print("[");
+        for(int i = 0; i < 6; i++)
+            System.out.print("=====");
+        System.out.println("]\n");
 
-        if(toggle)
-        {
-            while(lexer.canLex())
-            {
-                System.out.println(lexer.lex());
-                System.out.print("[");
-                for(int i = 0; i < 10; i++)
-                    System.out.print("=====");
-                System.out.println("]\n");
-            }
-        }else
-        {
-            System.out.println("BNF:");
-            System.out.println(bnf);
-            System.out.print("[");
-            for(int i = 0; i < 6; i++)
-                System.out.print("=====");
-            System.out.println("]\n");
+        Node n = parser.parse();
 
+        printNodeInOrder(n);
 
-            Node n = parser.parse();
+        System.out.println();
+        System.out.print("[");
+        for(int i = 0; i < 6; i++)
+            System.out.print("=====");
+        System.out.println("]\n");
 
-            printNodeInOrder(n);
-
-            System.out.println();
-            System.out.print("[");
-            for(int i = 0; i < 6; i++)
-                System.out.print("=====");
-            System.out.println("]\n");
-
-            System.out.println("Post-fix:");
-            printNodePostOrder(n);
-        }
+        System.out.println("Post-fix:");
+        printNodePostOrder(n);
 
         lexer.close();
     }
