@@ -278,6 +278,7 @@ public class Parser {
         {
             consume("FUNCTION");
             node = ErrorNode(token);
+            node.setRight(function());
         }
 
         return node;
