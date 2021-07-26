@@ -20,9 +20,9 @@ public class Parser {
         System.out.println("Syntax error at line " + tempLine + ". Expected type: " + typeExpected + ", Type Received: " + currentToken.getType());
     }
 
-    private Node ErrorNode()
+    private Node ErrorNode(Token token)
     {
-        return new Node(new Token("-1", "ERROR", "Error"));
+        return new Node(new Token(token.getLine(), "ERROR", token.getValue()));
     }
 
     private void consume(String type)
@@ -274,7 +274,11 @@ public class Parser {
         {
             node = new Node(token);
         }
-
+        else if(!token.getType().equals("LINE_NUMBER"))
+        {
+            consume("FUNCTION");
+            node = ErrorNode(token);
+        }
 
         return node;
     }
